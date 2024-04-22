@@ -1,0 +1,13 @@
+digraph Tree {
+node [shape=box, style="filled", color="black", fontname="helvetica"] ;
+edge [fontname="helvetica"] ;
+0 [label="Troponin <= -0.299\ngini = 0.486\nsamples = 769\nvalue = [320, 449]\nclass = positive", fillcolor="#c6e3f8"] ;
+1 [label="CK-MB <= -0.079\ngini = 0.338\nsamples = 408\nvalue = [320, 88]\nclass = negative", fillcolor="#eca46f"] ;
+0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+2 [label="gini = 0.053\nsamples = 328\nvalue = [319, 9]\nclass = negative", fillcolor="#e6853f"] ;
+1 -> 2 ;
+3 [label="gini = 0.025\nsamples = 80\nvalue = [1, 79]\nclass = positive", fillcolor="#3c9ee5"] ;
+1 -> 3 ;
+4 [label="gini = 0.0\nsamples = 361\nvalue = [0, 361]\nclass = positive", fillcolor="#399de5"] ;
+0 -> 4 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+}
