@@ -79,34 +79,6 @@
     - 파일 형식: CSV 파일 <br>
     - 구분: 이진 분류 데이터 세트 <br>
     - 형태: 2768 rows × 10 columns
-    - 데이터 시나리오 <br>
-    <br>
-    <table>
-      <tr>
-          <td>True Positive (TP)</td>
-          <td>모델이 양성 환자를 양성으로 올바르게 분류한 경우</td>
-      </tr>
-      <tr>
-          <td>False Positive (FP)</td>
-          <td>모델이 음성 환자를 양성으로 잘못 분류한 경우(오진, error I)</td>
-      </tr>
-      <tr>
-          <td>True Negative (TN)</td>
-          <td>모델이 음성 환자를 음성으로 올바르게 분류한 경우</td>
-      </tr>
-      <tr>
-          <td>False Negative (FN)</td>
-          <td>모델이 양성 환자를 음성으로 잘못 분류한 경우(놓침, error II)</td>
-      </tr>
-    </table>
-    <br>
-    정밀도 (Precision): 모델이 양성으로 예측한 환자 중에서 실제로 양성인 환자의 비율을 나타낸다. <br>
-    즉, 음성 클래스로 예측한 결과 중 얼마나 많은 것이 진짜 음성인지 측정한다.
-    <br></br>
-    재현율 (Recall): 실제 양성 환자 중에서 모델이 양성으로 정확하게 예측한 환자의 비율을 나타낸다. <br>
-    즉, 모델이 얼마나 많은 양성 환자를 "놓치지 않고" 감지했는지 측정한다.  
-    <br></br>
-    양성인 환자를 놓치지 않는 것이 중요하다고 판단되므로, <b>임계치를 낮춰서 재현율을 높여주는 것이 적합하다.</b>
   </div>
 </div>
 
@@ -221,6 +193,40 @@
     </table>
   </div>
 </div>
+
+<br></br>
+<br></br>
+
+<div style='margin-left: 20px; font-size: 16px;'>
+  <p style='font-size: 23px'>□ 데이터 시나리오</p>
+  <table>
+    <tr>
+        <td>True Positive (TP)</td>
+        <td>모델이 양성 환자를 양성으로 올바르게 분류한 경우</td>
+    </tr>
+    <tr>
+        <td>False Positive (FP)</td>
+        <td>모델이 음성 환자를 양성으로 잘못 분류한 경우(오진, error I)</td>
+    </tr>
+    <tr>
+        <td>True Negative (TN)</td>
+        <td>모델이 음성 환자를 음성으로 올바르게 분류한 경우</td>
+    </tr>
+    <tr>
+        <td>False Negative (FN)</td>
+        <td>모델이 양성 환자를 음성으로 잘못 분류한 경우(놓침, error II)</td>
+    </tr>
+  </table>
+  <br>
+  정밀도 (Precision): 모델이 양성으로 예측한 환자 중에서 실제로 양성인 환자의 비율을 나타낸다. <br>
+  즉, 음성 클래스로 예측한 결과 중 얼마나 많은 것이 진짜 음성인지 측정한다.
+  <br></br>
+  재현율 (Recall): 실제 양성 환자 중에서 모델이 양성으로 정확하게 예측한 환자의 비율을 나타낸다. <br>
+  즉, 모델이 얼마나 많은 양성 환자를 "놓치지 않고" 감지했는지 측정한다.  
+  <br></br>
+  양성인 환자를 놓치지 않는 것이 중요하다고 판단되므로, <b>임계치를 낮춰서 재현율을 높여주는 것이 적합하다.</b>
+</div>
+
 
 <br></br>
 <br></br>
@@ -535,7 +541,7 @@
   </div>
   <div style='margin-left: 20px;'>
     <p style='font-size: 18px;'>○ 임계치 조정</p>
-    <img src='./images/6_1_결과.png' width='800px'>
+    <img src='./images/6_1_결과.png' width='800px'>  
     <sub>* 9Cycle-임계치 조정 전, 10Cycle-임계치 조정 후</sub>
     <br></br>
     - 이전보다 더 높은 성능의 모델임을 확인하였으므로 임계치가 0.455인 LogisticRegression 모델이 적합하다는 것을 확인함
