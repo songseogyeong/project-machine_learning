@@ -539,9 +539,13 @@
     - 정확도가 0.8006, 정밀도 0.7712, 재현율 0.8082, F1 0.7893인 예측 모델이 생성됨 <br>
     - 임계치를 0.455으로 조정하여 훈련한 결과, 재현율이 상승하였고 정밀도가 이전보다 하락함
   </div>
+
+  <br></br>
+
   <div style='margin-left: 20px;'>
-    <p style='font-size: 18px;'>○ 임계치 조정</p>
-    <img src='./images/6_1_결과.png' width='800px'>  
+    <p style='font-size: 18px;'>○ 결과</p>
+    <img src='./images/6_1_결과.png' width='800px'>
+    <br></br>
     <sub>* 9Cycle-임계치 조정 전, 10Cycle-임계치 조정 후</sub>
     <br></br>
     - 이전보다 더 높은 성능의 모델임을 확인하였으므로 임계치가 0.455인 LogisticRegression 모델이 적합하다는 것을 확인함
