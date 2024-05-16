@@ -157,7 +157,6 @@
   
   <div style='margin-left: 20px;'>
     <p style='font-size: 18px;'>○ 평가</p>
-    - OLS, VIF 등 다양한 평가 지표를 통한 데이터 품질 측정 및 개선 <br>
     - 데이터 평가 점수 산출 방식
     <table>
         <tr>
@@ -335,21 +334,6 @@
     - 데이터 분포 확인 결과 이상치로 확인되는 데이터가 보여 수치형 데이터의 이상치 제거가 필요하다고 판단됨 <br>
     - 이상치 제거 후 분포가 고르지 않은 데이터 존재 시 분포 변환이 필요함 <br>
     <sub>* 수치형 데이터: 'Glucose', 'BloodPressure', 'SkinThickness', 'BMI', 'DiabetesPedigreeFunction'</sub>
-    <br></br>
-    <br></br>
-    <p style='font-size: 18px;'>○ OLS(최소자승법)</p>
-    <img src='./images/2_1_OLS.png' width='700px'>
-    <br></br>
-    - OLS 성능 지표 확인 결과 R2 스코어가 0.18, Durbin-Watson이 0.284으로 나타남 <br>
-    - P>|t| 에서도 문제가 있는 것으로 나타남 <br>
-    - 이러한 결과로 보아 현재 데이터는 전처리가 필요하다고 판단됨
-    <br></br>
-    <br></br>
-    <p style='font-size: 18px;'>○ VIF</p>
-    <img src='./images/2_1_다중공산성.png' width='300px'>
-    <br></br>
-    - 현재 일부 피처에서 다중 공산성 문제를 띄고 있는 데이터가 확인됨 <br>
-    - 데이터 전처리가 필요할 것으로 보이며, 피처 제거 시 상관관계를 확인한 뒤 제거가 필요함
     <br></br>
     <br></br>
     <p style='font-size: 18px;'>○ 상관 관계</p>
