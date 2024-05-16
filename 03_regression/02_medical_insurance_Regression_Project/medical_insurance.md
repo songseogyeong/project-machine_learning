@@ -342,99 +342,164 @@ https://www.kaggle.com/datasets/mirichoi0218/insurance/data
 ## 2. 데이터 전처리
 ### □ 데이터 전처리
 #### ○ 이상치 제거
-<code>
+```
 from sklearn.preprocessing import StandardScaler
 
+# 표준화 객체 생성
 std = StandardScaler()
 
+# 데이터 표준화 변환
 result = std.fit_transform(pre_m_df[['charges']])
 
+# 표준화 데이터 프레임 생성
 std_pre_m_df = pd.DataFrame(result, columns=['charges'])
-</code>
+```
+<img src='./images/3_1_이상치제거분포.png' width='800px'>
 
-- 이상치 제거 후 전체적인 데이터 분포가 고르게 나타났으나, SkinThickness와 lnsulin에서 0에 가까운 데이터가 많이 발생하는 이상치를 확인함
+- 이상치 제거 후 타겟 데이터 분포가 고르게 나타남
 
+<br></br>
 
+#### ○ LabelEncoder
+```
+from sklearn.preprocessing import LabelEncoder
 
+# 데이터 프레임 복제
+enc_m_df = pre_m_df.copy()
+encoders = {}
 
-<p style='font-size: 25px'>2. 데이터 전처리</p>
-<div style='margin-left: 20px; font-size: 16px;'>
-  <p style='font-size: 23px'>□ 데이터 전처리</p>
-  <div style='margin-left: 20px;'>
-    <p style='font-size: 18px;'>○ 타겟 비중 (under sampling)</p>
-    <code>
-      Outcome0 = pre_h_df[pre_h_df.Outcome == 0].sample(952, random_state=124) <br>
-      Outcome1 = pre_h_df[pre_h_df.Outcome == 1] <br>
-      pre_h_df = pd.concat([Outcome0, Outcome1]).reset_index(drop=True)
-    </code> <br>
-    <br>
-    - 언더 샘플링을 통해 타겟 데이터의 비중을 고르게 맞춰줌
-    <br></br>
-    <br></br>
-    <p style='font-size: 18px;'>○ 이상치 제거</p>
-    <code>from sklearn.preprocessing import StandardScaler</code>
-    <br></br>
-    <code>std_pre_h_df = pre_h_df.copy()</code>
-    <code>columns = ['Glucose', 'BloodPressure', 'SkinThickness', 'BMI', 'DiabetesPedigreeFunction']</code>
-    <br></br>
-    <code>for column in columns:</code>
-    <code>std = StandardScaler()</code>
-    <code>result = std.fit_transform(pre_h_df[[column]])</code>
-    <code>std_pre_h_df[column] = result</code>
-    <br></br>
-    <code>for column in columns:</code>
-    <code>std_pre_h_df = std_pre_h_df[std_pre_h_df[column].between(-1.96, 1.96)]</code>
-    <br></br>
-    <code>pre_h_df = pre_h_df.iloc[std_pre_h_df.index].reset_index(drop=True)</code>
-    <br></br>
-    <img src='./images/3_1_이상치제거분포.png' width='800px'>
-    <br></br>
-    - 이상치 제거 후 전체적인 데이터 분포가 고르게 나타났으나, SkinThickness와 lnsulin에서 0에 가까운 데이터가 많이 발생하는 이상치를 확인함
-    <br></br>
-    <code>test_h_df = pre_h_df[~(pre_h_df.SkinThickness < 5)]</code>
-    <br></br>
-    <code>test_h_df = test_h_df[~(test_h_df.Insulin < 5)].reset_index(drop=True)</code>
-    <br></br>
-    <img src='./images/3_2_이상치제거분포.png' width='800px'>
-    <img src='./images/3_2_이상치제거결과.png' width='800px'>
-    <img src='./images/3_2_이상치제거결과_표.png' width='350px'>
-    <br></br>
-    - 이상치 제거 후 전체적인 데이터 분포는 고르게 나타나는 것으로 확인했으나, 오히려 성능이 저하된 것을 확인함 <br>
-    - 따라서, SkinThickness와 lnsulin의 특정 데이터는 제거하지 않고 진행함
-    <br></br>
-    <br></br>
-    <p style='font-size: 18px;'>○ 차원축소</p>
-    <img src='./images/3_3_차원축소.png' width='800px'>
-    <img src='./images/3_3_차원축소_표.png' width='350px'>
-    <br></br>
-    - 차원축소 PCA(6Cycle), LDA(7Cycle) 결과 오히려 성능이 저하됨에 따라 차원 축소는 진행하지 않음
-  </div>
-</div>
+# 문자열 컬럼 추출
+columns = ['sex', 'smoker']
+
+# 반복하여 컬럼 인코딩 처리:
+for column in columns:
+    # 레이블인코더 객체 생성
+    encoder = LabelEncoder()
+
+    # 문자열 데이터 정수로 형변환
+    result = encoder.fit_transform(enc_m_df[column])
+
+    # 형변환 값으로 대체
+    enc_m_df[column] = result
+
+    # 원본 데이터 담기
+    encoders[column] = encoder.classes_
+```
+
+- LabelEncoder를 통해 sex, smoker의 데이터 값을 object에서 int로 형변환
+
+<br></br>
+
+#### ○ OneHotEncoder
+```
+import numpy as np
+from sklearn.preprocessing import OneHotEncoder
+
+# 원 핫 인코더 객체 생성
+# sparse_output: False = 밀집행렬(실제 값으로 채워진 행렬) 반환
+one_hot_encoder = OneHotEncoder(sparse_output=False)
+
+# 지역 피처 인코딩 처리
+result = one_hot_encoder.fit_transform(enc_m_df[['region']])
+
+# 인코딩 값 데이터 프레임으로 생성하고 정수로 형변환한 뒤, 기존 데이터 프레임과 병합
+enc_m_df = pd.concat([enc_m_df, pd.DataFrame(result, columns=one_hot_encoder.categories_).astype(np.int8)], axis=1)
+
+# 사용이 끝난 데이터 제거
+enc_m_df = enc_m_df.drop(labels='region', axis=1)
+
+# 원 핫 인코딩 컬럼명 변경
+enc_m_df.rename(columns={
+    ('northeast',): 'northeast',
+    ('northwest',): 'northwest',
+    ('southeast',): 'southeast',
+    ('southwest',): 'southwest',
+}, inplace=True)
+```
+
+- 데이터끼리의 순서가 정해지지 않은 데이터를 OneHotEncoder를 통해 정수로 변환
+
+<br></br>
+
+#### ○ 피처 제거
+##### ○ OLS
+<img src='./images/3_2_OLS.png' width='600px'>
+
+##### ○ VIF
+<img src='./images/3_3_VIF.png' width='250px'>
+
+##### ○ 상관관계
+<img src='./images/3_3_상관관계.png' width='600px'>
+<table>
+  <tr>
+      <td>연번</td>
+      <td>컬럼</td>
+      <td>상관관계</td>
+  </tr>
+  <tr>
+      <td>1</td>
+      <td>smoker</td>
+      <td>0.546188</td>
+  </tr>
+  <tr>
+      <td>2</td>
+      <td>age</td>
+      <td>0.542972</td>
+  </tr>
+  <tr>
+      <td>3</td>
+      <td>children</td>
+      <td>0.151047</td>
+  </tr>
+  <tr>
+      <td>4</td>
+      <td>bmi</td>
+      <td>-0.017568</td>
+  </tr>
+</table>
+
+- 상관관계가 낮은 피처 제거 후 R2 값이 상승하였고 다중 공산성이 해소된 것을 확인함
 
 <br></br>
 <br></br>
 <br></br>
 
-<p style='font-size: 25px'>3. 데이터 훈련</p>
-<div style='margin-left: 20px; font-size: 16px;'>
-  <p style='font-size: 23px'>□ 데이터 훈련</p>
-  <div style='margin-left: 20px;'>
-    <p style='font-size: 18px;'>○ LogisticRegression</p>
-    <code>from sklearn.model_selection import train_test_split</code>
-    <code>from sklearn.linear_model import LogisticRegression</code>
-    <code>from imblearn.over_sampling import SMOTE</code>
-    <br></br>
-    <code>features, targets = pre_h_df.iloc[:, :-1], pre_h_df.iloc[:, -1]</code>
-    <br></br>
-    <code>X_train, X_test, y_train, y_test = train_test_split(features, targets, test_size=0.2, stratify=targets, random_state=124)</code>
-    <br></br>
-    <code>lg = LogisticRegression(solver='liblinear', penalty='l2', random_state=124)</code>
-    <br></br>
-    <code>lg.fit(X_train, y_train)</code>
-    <br></br>
-    - LogisticRegression 모델에 l2 규제를 사용하여 훈련을 진행함
-  </div>
-</div>
+## 3. 데이터 훈련
+### □ 데이터 훈련
+```
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
+
+# 데이터 세트 분리
+# 피처, 타겟 데이터 분리
+features, targets = enc_m_df.iloc[:, :-1], enc_m_df.iloc[:, -1]
+
+# 학습/테스트 및 문제/정답 데이터 세트 분리
+X_train, X_test, y_train, y_test = \
+train_test_split(features, targets, test_size=0.2, random_state=124)
+
+# 가장 성능으로 높았던 모델 가져오기
+gb_r = GradientBoostingRegressor(random_state=124)
+
+# 파라미터 값 조정
+parameters = {'max_depth': [3, 4, 5], 'min_samples_split': [50, 60, 70], 'n_estimators': [40, 50, 60]}
+
+# 교차검증
+# n_splits: 데이터를 몇 개의 폴드로 나눌지를 결정 (일반적으로 5 또는 10)
+# shuffle: 분할 전 데이터 혼합 여부 
+kfold = KFold(n_splits=10, random_state=124, shuffle=True)
+
+# 하이퍼 파라미터 조정
+grid_cv_gb_r = GridSearchCV(gb_r, param_grid=parameters, cv=kfold, n_jobs=-1)
+
+# 훈련
+grid_cv_gb_r.fit(X_train, y_train)
+```
+
+- GradientBoostingRegressor 모델을 사용함
+- KFold와 GridSearchCV를 통해 파라미터 값을 조정하여 훈련 진행
 
 <br></br>
 <br></br>
@@ -443,42 +508,46 @@ std_pre_m_df = pd.DataFrame(result, columns=['charges'])
 <br></br>
 
 <h1 id="Ⅲ. 평가">Ⅲ. 평가</h1>
-<p style='font-size: 25px'>1. 데이터 분석 결과 및 개선</p>
-<div style='margin-left: 20px; font-size: 16px;'>
-  <p style='font-size: 23px'>□ 데이터 분석 결과 및 개선방안</p>
-  <div style='margin-left: 20px;'>
-    <p style='font-size: 18px;'>○ LogisticRegression</p>
-    <img src='./images/4_1_훈련.png' width='800px'>
-    <img src='./images/4_2_훈련.png' width='800px'>
-    <code>LogisticRegression(solver='liblinear', penalty='l2', random_state=124)</code>
-    <br></br>
-    - 정확도가 0.7943, 정밀도 0.7872, 재현율 0.7603, F1 0.7735인 예측 모델이 생성됨 <br>
-    - 양성인 환자를 놓치지 않는 것이 중요하여 재현율이 높아야 하는데, 현재 모델에서는 정밀도가 더 우세한 것으로 나타남 <br>
-    - 임계치 조정을 통해 재현율 점수를 더 향상해야 함
-  </div>
-</div>
+
+## 1. 데이터 훈련 결과 및 평가
+### □ 데이터 훈련 평가
+#### ○ cross val score
+```
+[0.81853009, 0.65259246, 0.82374275, 0.75693076, 0.74001037]
+```
+- cross val score은 0.7583으로 나타남
+
+<br></br>
+
+#### ○ 최종 성능 확인
+<img src='./images/4_3_성능확인.png' width='800px'>
+<img src='./images/4_4_성능확인.png' width='800px'>
+- 과적합 확인을 위해 예측값과 실제값을 비교하였을 때 과적합 문제가 없다고 판단됨.
 
 <br></br>
 <br></br>
 
-<div style='margin-left: 20px; font-size: 16px;'>
-  <p style='font-size: 23px'>□ 데이터 개선</p>
-  <div style='margin-left: 20px;'>
-    <p style='font-size: 18px;'>○ 임계치 조정</p>
-    <img src='./images/5_1_훈련.png' width='800px'>
-    <br></br>
-    - 정확도가 0.8006, 정밀도 0.7712, 재현율 0.8082, F1 0.7893인 예측 모델이 생성됨 <br>
-    - 임계치를 0.455으로 조정하여 훈련한 결과, 재현율이 상승하였고 정밀도가 이전보다 하락함
-  </div>
+### □ 규제
+#### ○ lasso
+<img src='./images/5_1_라쏘.png' width='800px'>
 
-  <br></br>
+<br></br>
 
-  <div style='margin-left: 20px;'>
-    <p style='font-size: 18px;'>○ 결과</p>
-    <img src='./images/6_1_결과.png' width='800px'>
-    <br></br>
-    <sub>* 9Cycle-임계치 조정 전, 10Cycle-임계치 조정 후</sub>
-    <br></br>
-    - 이전보다 더 높은 성능의 모델임을 확인하였으므로 임계치가 0.455인 LogisticRegression 모델이 적합하다는 것을 확인함
-  </div>
-</div>
+#### ○ ridge
+<img src='./images/5_2_릿찌.png' width='800px'>
+
+#### ○ 규제 결과
+- 규제 결과 lasso(l1) 보다 ridge(l2)이 더 성능이 좋은 것으로 나타남
+- 비선형 패턴을 가지는 선형 데이터인지 규제 전 모델과 유사한 분포가 나타나고 있음
+- 따라서, 규제 전 모델은 과적합이 아니라 판단됨
+
+<br></br>
+<br></br>
+
+### □ 데이터 훈련 결과
+#### ○ 데이터 훈련 결과
+<img src='./images/4_1_성능확인.png' width='800px'>
+<img src='./images/4_2_성능확인.png' width='200px'>
+
+- 데이터 훈련 결과 아래의 파라미터를 가지는 GradientBoostingRegressor의 모델이 가장 적합하다는 것을 확인함.
+- {'max_depth': 3, 'min_samples_split': 60, 'n_estimators': 40}
