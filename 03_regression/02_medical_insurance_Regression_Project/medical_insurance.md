@@ -523,6 +523,18 @@ grid_cv_gb_r.fit(X_train, y_train)
 <img src='./images/4_3_성능확인.png' width='800px'>
 <img src='./images/4_4_성능확인.png' width='800px'>
 - 과적합 확인을 위해 예측값과 실제값을 비교하였을 때 과적합 문제가 없다고 판단됨.
+- 오차가 나타나는 구간은 smoker 피처에서 범주형 데이터의 분포 차이로 인해 나타난 것으로 보여지며, 데이터가 부족한 데이터를 더 수집하게 되면 더 좋은 성능을 기대할 수 있을 것이라 생각됨.
+
+<br></br>
+<br></br>
+
+### □ 데이터 훈련 결과
+#### ○ 데이터 훈련 결과
+<img src='./images/4_1_성능확인.png' width='800px'>
+<img src='./images/4_2_성능확인.png' width='200px'>
+
+- 데이터 훈련 결과 아래의 파라미터를 가지는 GradientBoostingRegressor의 모델이 가장 적합하다는 것을 확인함.
+- {'max_depth': 3, 'min_samples_split': 60, 'n_estimators': 40}
 
 <br></br>
 <br></br>
@@ -538,16 +550,3 @@ grid_cv_gb_r.fit(X_train, y_train)
 
 #### ○ 규제 결과
 - 규제 결과 lasso(l1) 보다 ridge(l2)이 더 성능이 좋은 것으로 나타남
-- 비선형 패턴을 가지는 선형 데이터인지 규제 전 모델과 유사한 분포가 나타나고 있음
-- 따라서, 규제 전 모델은 과적합이 아니라 판단됨
-
-<br></br>
-<br></br>
-
-### □ 데이터 훈련 결과
-#### ○ 데이터 훈련 결과
-<img src='./images/4_1_성능확인.png' width='800px'>
-<img src='./images/4_2_성능확인.png' width='200px'>
-
-- 데이터 훈련 결과 아래의 파라미터를 가지는 GradientBoostingRegressor의 모델이 가장 적합하다는 것을 확인함.
-- {'max_depth': 3, 'min_samples_split': 60, 'n_estimators': 40}

@@ -476,4 +476,11 @@ std_lgb_r.fit(X_train, y_train)
 - 과적합 확인을 위해 예측값과 실제값을 비교하였을 때 과적합 문제가 있다고 판단됨.
 
 <br></br>
-<br></br>
+
+#### ○ 개선
+<img src='./images/4_3_과적합.png' width='800px'>
+<code>{'lgb_r__n_estimators': [50],'lgb_r__learning_rate': [0.2], 'lgb_r__max_depth': [2], 'lgb_r__min_child_samples': [20]}</code>
+
+<br>
+
+- 과적합 해소를 위해 하이퍼 파라미터 조정 후 성능을 확인하였을 때, 수치적으로는 과적합이 의심이 되나 그래프 상에서는 어느정도 분포가 일치한 것으로 나타나며 과적합이 해소되었다고 판단됨.
