@@ -124,7 +124,7 @@
 
 
 ○ 사용자 별 훈련 모델: 사전 훈련 모델에 사용자의 정보를 학습한 모델
-- 사용자의 정보와 사전 훈련 모델 정보의 유사도를 분석하여 사용자가 선호하는 모임을 예측하여 추천할 수 있게 함
+- 사용자가 모임 상세 페이지에 접속할 시 해당 모임의 정보를 가지고 회원 별 모델을 추가 학습함
 
 | 연번 | 테이블      | 정보                                          |
 |----|----------|---------------------------------------------|
@@ -136,7 +136,8 @@
 
 <br></br>
 
-○ X_test (회원)
+○ X_test (회원 정보)
+- 사용자의 정보와 사전 훈련 모델 정보의 유사도를 분석하여 사용자가 선호하는 모임을 예측하여 추천할 수 있게 함
 
 | 연번 | 테이블                          | 정보                           |
 |----|------------------------------|------------------------------|
@@ -788,55 +789,55 @@
   <summary>code</summary>
 
   ```
-class ClubDetailView(View):
+  class ClubDetailView(View):
     def get(self, request):
-        @staticmethod
-        def clean_text(text):
-            # 문자열로 변환한 후 특수 문자와 줄 바꿈 문자를 제거하고 단일 공백으로 변환하며, 앞뒤 공백을 제거
-            return re.sub(r'[^\w\s]+', '', text).replace('\n', '').replace('\r', ' ').strip()
+      @staticmethod
+      def clean_text(text):
+          # 문자열로 변환한 후 특수 문자와 줄 바꿈 문자를 제거하고 단일 공백으로 변환하며, 앞뒤 공백을 제거
+          return re.sub(r'[^\w\s]+', '', text).replace('\n', '').replace('\r', ' ').strip()
 
-        @staticmethod
-        def process_club_data(club):
-            # Club 객체의 데이터를 정규 표현식을 사용하여 클린한 후 리스트로 반환
-            text = ' '.join(club)
-            features = clean_text(text)
-            return features
+      @staticmethod
+      def process_club_data(club):
+          # Club 객체의 데이터를 정규 표현식을 사용하여 클린한 후 리스트로 반환
+          text = ' '.join(club)
+          features = clean_text(text)
+          return features
 
-        # club ai 회원 별 학습 로직
-        # 회원 정보를 섹션에서 받아 멤버 객체로 생성 (dict 객체)
-        member = request.session['member']
+      # club ai 회원 별 학습 로직
+      # 회원 정보를 섹션에서 받아 멤버 객체로 생성 (dict 객체)
+      member = request.session['member']
 
-        # 회원의 정보를 가져오기 (오브젝트 객체)
-        member = Member.enabled_objects.get(id=member.get('id'))
+      # 회원의 정보를 가져오기 (오브젝트 객체)
+      member = Member.enabled_objects.get(id=member.get('id'))
 
-        # 모임의 정보 가져오기 (오브젝트 객체)
-        club = Club.enabled_objects.get(id=club_id)
+      # 모임의 정보 가져오기 (오브젝트 객체)
+      club = Club.enabled_objects.get(id=club_id)
 
-        # 회원의 ai 모델 경로 찾아오기
-        member_club_ai_path = member.member_recommended_club_model
+      # 회원의 ai 모델 경로 찾아오기
+      member_club_ai_path = member.member_recommended_club_model
 
-        # 회원의 ai 모델 경로를 통해 불러오기 (pkl 파일)
-        model = joblib.load(os.path.join(Path(__file__).resolve().parent.parent, member_club_ai_path))
+      # 회원의 ai 모델 경로를 통해 불러오기 (pkl 파일)
+      model = joblib.load(os.path.join(Path(__file__).resolve().parent.parent, member_club_ai_path))
 
-        # 지역 객체 저장
-        region = Region.objects.get(id=club.club_region_id)
+      # 지역 객체 저장
+      region = Region.objects.get(id=club.club_region_id)
 
-        # 문제-학습 데이터 (지역, 모임명, 모임소개, 모임정보, 카테고리)
-        add_X_trian = [region.region, club.club_name, club.club_intro, club.club_info]
-        # 정답-학습 데이터 (카테고리)
-        add_y_train = [club.club_main_category.id]
+      # 문제-학습 데이터 (지역, 모임명, 모임소개, 모임정보, 카테고리)
+      add_X_trian = [region.region, club.club_name, club.club_intro, club.club_info]
+      # 정답-학습 데이터 (카테고리)
+      add_y_train = [club.club_main_category.id]
 
-        # 정규표현식 함수를 통해 특수문자 등 제거 gn list로 변환
-        add_X_train_clean = [process_club_data(add_X_trian)]
+      # 정규표현식 함수를 통해 특수문자 등 제거 gn list로 변환
+      add_X_train_clean = [process_club_data(add_X_trian)]
 
-        # 추가적인 훈련 데이터 변환
-        additional_X_train_transformed = model.named_steps['count_vectorizer'].transform(add_X_train_clean)
-        # 추가 훈련 진행 (카테고리 1부터 11까지 가져오기)
-        # partial_fit는 온라인 학습을 지원하는 메서드로, 데이터가 점진적으로 도착할 때마다 모델을 업데이트
-        model.named_steps['multinomial_NB'].partial_fit(additional_X_train_transformed, add_y_train, classes=[i for i in range(1, 12)])
+      # 추가적인 훈련 데이터 변환
+      additional_X_train_transformed = model.named_steps['count_vectorizer'].transform(add_X_train_clean)
+      # 추가 훈련 진행 (카테고리 1부터 11까지 가져오기)
+      # partial_fit는 온라인 학습을 지원하는 메서드로, 데이터가 점진적으로 도착할 때마다 모델을 업데이트
+      model.named_steps['multinomial_NB'].partial_fit(additional_X_train_transformed, add_y_train, classes=[i for i in range(1, 12)])
 
-        # fit이 완료된 모델을 다시 같은 경로에 같은 이름으로 내보내줍니다.
-        joblib.dump(model, member.member_recommended_club_model)
+      # fit이 완료된 모델을 다시 같은 경로에 같은 이름으로 내보내줍니다.
+      joblib.dump(model, member.member_recommended_club_model)
   ```
 </details>
 
@@ -895,66 +896,99 @@ class ClubDetailView(View):
 
 # 2. 트러블 슈팅 및 느낀점
 ## □ 트러블 슈팅
-```
-@staticmethod
-def clean_text(text):
-    # 문자열로 변환한 후 특수 문자를 제거하는 함수
-    return re.sub(r'[^\w\s]', ' ', str(text))
+○ 정규표현식 줄바꿈 문자 노출
+- 정규 표현식 적용하였으나 '\r\n' 줄바꿈 문자가 그대로 노출되는 오류가 발생함
 
-@staticmethod
-def process_club_data(club):
-    text = ' '.join(club)
-    features = clean_text(text)
-    return features
-```
-매개변수를 str을 통해 문자열로 변환 
-
-결과값
 ```
 ['1', '로드 자전거 한', '자전거 타면서 운동하실 분', '오직 자전거를 좋아하는 성인자전거모임\r\n\r\n같이 자전거 타고싶어서 직접만듭니다\r\n자전거 정보같은것도 공유도하고 같이 한강 라이딩\r\n즐겁게 취미로 타실분 모집합니다\r\n\r\n평일주말 저녁 오후에 일주일에 12번 소규모 라이딩 45명으로 탈것같습니다\r\n실력상관없이 즐겁게 같이 타봐요 저도 자린이 입니다\r\n강남구 탄천1교 자전거도로에서 주로 모일것같습니다\r\n코스는 모여서 정할것같아요\r\n\r\n헬멧 전조등 후미등 필수입니다\r\n매너있고 안전하게 같이 라이딩해요']
 ```
 
-\n, \r이 나타나며, 텍스트가 연결되지 않음
+<details>
+  <summary>before code</summary>
 
-```
-@staticmethod
-def clean_text(text):
-    # 문자열로 변환한 후 특수 문자와 줄 바꿈 문자를 제거하고 단일 공백으로 변환하며, 앞뒤 공백을 제거
-    return re.sub(r'[^\w\s]+', '', text).replace('\n', '').replace('\r', ' ').strip()
-```
+  ```
+  @staticmethod
+  def clean_text(text):
+      # 문자열로 변환한 후 특수 문자를 제거하는 함수
+      return re.sub(r'[^\w\s]', ' ', text)
 
-결과값
+  @staticmethod
+  def process_club_data(club):
+      text = ' '.join(club)
+      features = clean_text(text)
+      return features
+  ```
+</details>
+
+<br></br>
+
+○ 정규표현식 해결
+- ```replace```를 통해  \n와 \r 줄바꿈 문자를 ' ' 단일 공백으로 변환하여 문제를 해결함
+
 ```
 서울 로드 자전거 한 자전거 타면서 운동하실 분 오직 자전거를 좋아하는 성인자전거모임  같이 자전거 타고싶어서 직접만듭니다 자전거 정보같은것도 공유도하고 같이 한강 라이딩 즐겁게 취미로 타실분 모집합니다  평일주말 저녁 오후에 일주일에 12번 소규모 라이딩 45명으로 탈것같습니다 실력상관없이 즐겁게 같이 타봐요 저도 자린이 입니다 강남구 탄천1교 자전거도로에서 주로 모일것같습니다 코스는 모여서 정할것같아요  헬멧 전조등 후미등 필수입니다 매너있고 안전하게 같이 라이딩해요
 ```
 
-----
+<details>
+  <summary>after code</summary>
 
-```
-model = joblib.load(os.path.join(Path(__file__).resolve().parent, member_club_ai_path))
-```
+  ```
+  @staticmethod
+  def clean_text(text):
+      # 문자열로 변환한 후 특수 문자와 줄 바꿈 문자를 제거하고 단일 공백으로 변환하며, 앞뒤 공백을 제거
+      return re.sub(r'[^\w\s]+', '', text).replace('\n', '').replace('\r', ' ').strip()
+  ```
+</details>
 
+<br></br>
+
+○ **[FileNotFoundError]** plk 파일 로드 오류
+- 오류 메세지
+```
 FileNotFoundError: [Errno 2] No such file or directory: 'C:\\study\\teenplay_server\\ai\\ai/2024/05/22/club_model18.pkl'
-
-\\역슬래시와 /슬래시가 혼용되는 문제
-인터넷 검색해보니 
-
 ```
-model = joblib.load(os.path.join(Path(__file__).resolve().parent.parent, member_club_ai_path))
+
+<details>
+  <summary>before code</summary>
+  ```
+  model = joblib.load(os.path.join(Path(__file__).resolve().parent, member_club_ai_path))
+  ```
+</details>
+
+<br>
+
+- pkl 파일 불러오기 시 파일 경로를 제대로 찾지 못하는 오류인 것으로 나타남
+- 경로 확인해보면 \\ (역슬래시)와 / (슬래시)가 혼용되고 있음
+- 문제 해결을 위해 인터넷을 찾아보니 ```Path(__file__).resolve().parent``` 스크립트 파일이 있는 디렉토리에서 해당 파일을 찾으려고 시도 중인것으로 나타남
+- ```Path(__file__).resolve().parent.parent``` parent를 두개 붙여주면 스크립트 파일이 있는 디렉토리의 상위 디렉토리로 이동하기 때문에 경로를 제대로 찾을 수 있는 것으로 확인함
+
+<br></br>
+
+○ **[FileNotFoundError]** plk 파일 로드 오류 해결
+- 즉, 파일의 위치가 더 상위 디렉토리에 있거나 다른 위치에 있다면 ```.parent.parent``` 옵션을 사용
+
+<details>
+  <summary>after code</summary>
+
+  ```
+  model = joblib.load(os.path.join(Path(__file__).resolve().parent.parent, member_club_ai_path))
+  ```
+</details>
+
+<br></br>
+
+○ **[ValueError]** targets 데이터 불러오기 오류 
+- 오류 메세지
 ```
-로 변경하면 됨 
-
-Path(__file__).resolve().parent.parent: 이 부분은 현재 스크립트 파일의 경로에서 두 단계 위의 상위 디렉토리를 나타냅니다. 즉, 스크립트 파일이 있는 디렉토리의 상위 디렉토리를 나타냅니다.
-
-Path(__file__).resolve().parent: 이 부분은 현재 스크립트 파일의 경로에서 한 단계 위의 상위 디렉토리를 나타냅니다. 즉, 스크립트 파일이 있는 디렉토리를 나타냅니다
-
-파일의 위치가 더 상위 디렉토리에 있거나 다른 위치에 있다면 .parent.parent 옵션을 사용
-
-----
-
+  ValueError: The type of target data is not known
 ```
-class AiTests(TestCase):
-      member = Member.enabled_objects.get(id=18)
+
+<details>
+  <summary>before code</summary>
+
+  ```
+  class AiTests(TestCase):
+    member = Member.enabled_objects.get(id=18)
 
     # 회원의 ai 모델 경로 찾아오기
     member_club_ai_path = member.member_recommended_club_model
@@ -981,43 +1015,66 @@ class AiTests(TestCase):
 
     additional_X_train_transformed = model.named_steps['count_vectorizer'].transform(add_X_train_clean)
     model.named_steps['multinomial_NB'].partial_fit(additional_X_train_transformed, add_y_train, classes=[i for i in range(1, 12)])
-```
+  ```
 
-ValueError: The type of target data is not known
-데이터의 유형을 명확히 알 수 없을 때 발생
+</details>
 
-타겟 데이터 확인 필요 
+<br>
 
-```
-    add_y_train = [club.club_main_category]
-    print(add_y_train)
-```
-
-결과값
-```
-[<Category: Category object (3)>]
-```
-
-오브젝트로 나오는 것을 확인함
-객체 값을 가져와야하기 때문에 .id로 정확한 객체의 속성값을 가져오기
+- 타겟 데이터의 유형을 명확이 할 수 없다고 나타남에 따라 타겟 데이터가 어떻게 출력되는지 확인
+- 확인 결과 타겟 데이터는 오브젝트 객체로 나타나고 있었음
 
 ```
-add_y_train = [club.club_main_category.id]
+  [<Category: Category object (3)>]
 ```
 
-값 [3]
-오류 없음!
+<details>
+  <summary>code</summary>
+
+  ```
+      add_y_train = [club.club_main_category]
+      print(add_y_train)
+  ```
+
+</details>
+
+<br>
+
+- 객체의 값을 가져와야 하기 때문에 .id 라는 속성을 붙여 정확한 객체의 값을 가져오기
+- 수정 후 실행한 결과 오류가 없이 정상 작동하는 것을 확인함
+
+```
+  [3]
+```
+
+<details>
+  <summary>after code</summary>
+
+  ```
+  add_y_train = [club.club_main_category.id]
+  ```
+</details>
+
 
 <br></br>
 
 ## □ 느낀점
-- 웹 개발에 이어 머신러닝(분류 및 회귀)을 학습하고 각 프로젝트를 진행하며, 두 프로젝트를 어떻게 연결할 수 있을지 궁금했음
-이번 ai 프로젝트를 통해 웹 서버에 ai 서비스를 직접 상용화하는 방법을 알게 되었으며, 실무에서 어떤식으로 적용되는지 알게 될 수 있었음
+- 실무와 유사한 프로젝트를 진행하며 실무 지식과 기술을 습득할 수 있었습니다.  
+웹 개발에 이어 머신러닝(분류 및 회귀)을 학습하고 각 프로젝트를 진행하며, 웹과 ai 서비스를 어떻게 접목할 수 있을지 궁금했습니다.  
+훈련된 ai 모델을 pkl 파일로 내보내고 불러오는 프로세스를 통해 상용화가 가능하게 됐고 데이터를 받아 모델의 추가 학습도 가능하다는 것을 보며, 실무에서도 해당 프로세스 대로 적용할 수 있다는 것을 알 수 있었습니다.  
+실무에 필요한 실질적인 지식과 기술을 습득하며 성장할 수 있는 시간이 되어 매우 의미있게 다가왔습니다.
+
+<br>
+
+- 이번 팀 프로젝트를 진행하며 다시 한번 팀원과의 소통의 중요성을 느꼈습니다.  
+단순히 각자 파트를 분배하여 모델을 개발하는 것이 끝이 아닌 상용화 과정에서 예측 값 같은 디테일에 대해 논의해야 하는 부분이 있었고  
+서로의 ai 모델을 병합하는 과정에서 충돌되지 않기 위해 잦은 소통이 필요했습니다. 
+서로 간의 소통이 부족했으면 충돌 등으로 인해 문제 해결이 지체되었을 텐데 원활한 소통을 통해 무사히 마무리하며 다시 한번 소통의 중요성을 느낄 수 있었습니다.
 
 <br></br>
 <br></br>
 
 # 3. 개선사항
 ○ 사전 훈련 모델 예측 키워드 유지보수
-- 현재는 관리자가 유지보수를 위해 시즌별 키워드를 직접 입력할 수 있도록 구현
-- 앞으로의 개선을 위해 회의를 통해 정기적인 시즌 키워드를 자동으로 호출할 수 있도록 구현할 예정
+- 현재는 관리자가 유지보수를 위해 시즌별 키워드를 직접 입력할 수 있도록 구현됨
+- 앞으로의 개선을 위해 회의를 통해 정기적인 시즌 키워드 도출하고 자동으로 호출할 수 있도록 구현할 예정
