@@ -61,7 +61,10 @@ https://www.kaggle.com/datasets/claytonmiller/2015-residential-energy-consumptio
 <br>
 
 ✔ target (1개 target)  
-KWH: 전력 소비량
+
+| 컬럼명                          | 컬럼 설명              |
+|:----------------------------:|:------------------:|
+| KWH  | 전력 소비량  |
 
 <br></br>
 <br></br>
