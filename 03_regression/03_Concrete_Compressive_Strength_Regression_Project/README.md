@@ -128,7 +128,7 @@ https://www.kaggle.com/datasets/niteshyadav3103/concrete-compressive-strength
 
 <br>
 
-✔ 범주형이 없고 모두 수치형 데이터인 것으로 확인
+✔ 범주형이 없고 모두 수치형 데이터인 것으로 확인  
 ✔ Cement, Water, CoarseAggregate, FineAggregate, Concretecompressivestrength의 분포는 어느정도 고르다고 보여졌으나, 이외의 본푸는 한쪽으로 치우친 것을 확인
 
 
